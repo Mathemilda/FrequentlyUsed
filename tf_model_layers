@@ -1,0 +1,66 @@
+import keras
+import tensorflow as tf
+
+
+class UniformNoise(tf.keras.layers.Layer):
+    """
+    Add uniform noise to data.
+    Noise can be given as a range or it can be given as level.
+    Then it will be transformed into the range inside the class.
+    """
+    def __init__(self, shape, noise):
+        self.shape = shape
+        if isinstance(noise, list):
+            self.noise_range = noise
+        else:
+            self.noise_range = [-noise, noise]
+        super(UniformNoise, self).__init__()
+
+    def call(self, inputs, training=None):
+        if training:
+            noise = tf.random.uniform(shape=tf.shape(inputs),
+                                      minval=self.noise_range[0],
+                                      maxval=self.noise_range[1])
+            return inputs + noise
+        else:
+            return inputs
+
+    def compute_output_shape(self, shape):
+        return (input_shape[0], self.output_dim)
+
+
+class RandomTilt(tf.keras.layers.Layer):
+    """
+    Apply random tilt to inputs.
+
+    Ranges for horizontal and vertical stretches must be Python lists with floats.
+    """
+
+    def __init__(self, shape, hor_range, vert_range):
+        self.shape = shape
+        self.vert_range = vert_range
+        self.hor_range = hor_range
+        super(RandomTilt, self).__init__()
+
+    def call(self, inputs, training=None):
+        if training:
+            hor_tilt = 1-tf.random.uniform(shape=[1],
+                                       minval=self.hor_range[0],
+                                       maxval=self.hor_range[1])
+            hor_tilt_matr = tf.stack([tf.stack([hor_tilt, tf.constant([0.])],
+                                           axis=1),
+                                  tf.constant([0., 1.], shape=[1, 2])],
+                                 axis=1)
+            vert_tilt = 1-tf.random.uniform(shape=[1],
+                                        minval=self.vert_range[0],
+                                        maxval=self.vert_range[1])
+            vert_tilt_matr = tf.stack([tf.stack([tf.constant([0.]), vert_tilt],
+                                            axis=1),
+                                  tf.constant([1., 0.], shape=[1, 2])],
+                                  axis=1)
+            trnsr = tf.matmul(hor_tilt_matr, inputs)
+            trnsr = tf.matmul(vert_tilt_matr, inputs)
+            return trnsr
+        else:
+            return inputs
+
