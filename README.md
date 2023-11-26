@@ -1,5 +1,5 @@
 # FrequentlyUsed
-Python code I come to re-use often. This is a project under construction. 
+Python code I came to re-use often. This is a project under construction. 
 ![](under-construction.jpg)
 
 Here you can find:
