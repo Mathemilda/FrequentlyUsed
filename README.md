@@ -1,5 +1,5 @@
 # FrequentlyUsed
-Python code I come to re-use often. This is a project under constraction. ![working](under-construction.png)
+Python code I come to re-use often. This is a project under constraction. [](under-construction.jpg)
 Here you can find:
 A. My axiliary code
   1. Simple function for a date (maybe with time) as a string
