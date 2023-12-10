@@ -29,38 +29,51 @@ class UniformNoise(tf.keras.layers.Layer):
         return (input_shape[0], self.output_dim)
 
 
-class RandomTilt(tf.keras.layers.Layer):
+class ShearRotate(tf.keras.layers.Layer):
     """
-    Apply random tilt to inputs.
+    Apply random shear and rotation to inputs.
 
-    Ranges for horizontal and vertical stretches must be Python lists with floats.
+    Shear and rotation parameters must be floats.
     """
 
-    def __init__(self, shape, hor_range, vert_range):
+    def __init__(self, shape, vert_shear, hor_shear, rotation):
         self.shape = shape
-        self.vert_range = vert_range
-        self.hor_range = hor_range
-        super(RandomTilt, self).__init__()
+        self.vert_shear = vert_shear
+        self.hor_shear = hor_shear
+        self.rotation = rotation
+        super(ShearRotate, self).__init__()
+
+    def build(self, input_shape):
+        hor_shear = tf.random.uniform(shape=[1],
+                                  minval=-self.hor_shear,
+                                  maxval=self.hor_shear)
+        vert_shear = tf.random.uniform(shape=[1],
+                                  minval=-self.vert_shear,
+                                  maxval=self.vert_shear)
+        upper_left = 1 + hor_shear*vert_shear
+        self.shear_matr = tf.concat([tf.stack([upper_left, hor_shear],
+                                        axis=1),
+                              tf.stack([vert_shear, tf.constant([1.])],
+                                       axis=1)],
+                              axis=0)
+        angle = tf.random.uniform(shape=[1], 
+                                 minval=-self.rotation,
+                                 maxval=self.rotation)
+        r_cos = tf.cos(angle)
+        r_sin = tf.sin(angle)
+        self.rotation_matr = tf.concat([tf.stack([r_cos, r_sin], axis=1),
+                                  tf.stack([-r_sin, r_cos], axis=1)],
+                                 axis=0)
 
     def call(self, inputs, training=None):
         if training:
-            hor_tilt = 1-tf.random.uniform(shape=[1],
-                                       minval=self.hor_range[0],
-                                       maxval=self.hor_range[1])
-            hor_tilt_matr = tf.stack([tf.stack([hor_tilt, tf.constant([0.])],
-                                           axis=1),
-                                  tf.constant([0., 1.], shape=[1, 2])],
-                                 axis=1)
-            vert_tilt = 1-tf.random.uniform(shape=[1],
-                                        minval=self.vert_range[0],
-                                        maxval=self.vert_range[1])
-            vert_tilt_matr = tf.stack([tf.stack([tf.constant([0.]), vert_tilt],
-                                            axis=1),
-                                  tf.constant([1., 0.], shape=[1, 2])],
-                                  axis=1)
-            trnsr = tf.matmul(hor_tilt_matr, inputs)
-            trnsr = tf.matmul(vert_tilt_matr, inputs)
-            return trnsr
+            center = tf.reduce_mean(inputs, axis=-2, keepdims=True)
+            # I want to collapse a dimension where we enumerate pts.
+            centered = inputs - center
+            tnsr = tf.matmul(centered, self.rotation_matr)
+            tnsr = tf.matmul(centered, self.shear_matr)
+            tnsr = tnsr + center
+            return tnsr
         else:
             return inputs
 
