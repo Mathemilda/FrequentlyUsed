@@ -11,4 +11,4 @@ A. My axiliary code
 
 B. Custom layers for Tensorflow Model
    1. To add uniformly distributed noise to data.
-   2. To add a tilt to an image (like more general shear).
+   2. To add a generalized shear and rotation to an image.
