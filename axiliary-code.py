@@ -29,9 +29,10 @@ def exe_time(start_time):
     """
     Compute CPU time in minutes and create a message to print out.
 
-    The function returns elapsed execution time in minutes given time
-    of the execution start in datetime.datetime format.
-    In additon it outputs a message which can be printed out.
+    For a method with a loop the function returns elapsed execution 
+    time in minutes given a moment of the execution start in 
+    datetime.datetime format. In additon it outputs a message which 
+    can be printed out.
     
     Parameters
     ----------
@@ -54,8 +55,9 @@ def approx_finish_time(start_time, iteration_count, iteration_indx):
     """
     Approximate finish time.
 
-    The function prints an estimated finish time based at the execution start
-    time, number of repetitions (loops, iterations) and a current repetition
+    For a method with a loop with iteration taking about the same time each
+    the function prints an estimated finish time based at the execution start
+    time, number of repetitions (loops, iterations) and a current iteration
     index. Note that iterations are enumerated from 1. 
 
     Parameters
