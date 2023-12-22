@@ -32,15 +32,20 @@ class UniformNoise(tf.keras.layers.Layer):
 class ShearRotate(tf.keras.layers.Layer):
     """
     Apply random shear and rotation to inputs.
-
+    The method works for a case when we are given 2d point coordinates
+    and the last dimention stands for x, y coordinates. A dimension 
+    before it must be for point indices. If your case is different, transpose.
+    
     Shear and rotation parameters must be floats.
     """
 
-    def __init__(self, shape, vert_shear, hor_shear, rotation):
+    def __init__(self, shape, point_dim, vert_shear, hor_shear, rotation):
         self.shape = shape
+        self.point_dim = point_dim
         self.vert_shear = vert_shear
         self.hor_shear = hor_shear
         self.rotation = rotation
+        
         super(ShearRotate, self).__init__()
 
     def build(self, input_shape):
@@ -65,10 +70,9 @@ class ShearRotate(tf.keras.layers.Layer):
                                   tf.stack([-r_sin, r_cos], axis=1)],
                                  axis=0)
 
-    def call(self, inputs, training=None):
+    def call(self, inputs, point_dim = -2):
         if training:
-            center = tf.reduce_mean(inputs, axis=-2, keepdims=True)
-            # I want to collapse a dimension where we enumerate pts.
+            center = tf.reduce_mean(inputs, axis=self.point_dim, keepdims=True)
             centered = inputs - center
             tnsr = tf.matmul(centered, self.rotation_matr)
             tnsr = tf.matmul(centered, self.shear_matr)
